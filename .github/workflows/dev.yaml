@@ -1,0 +1,38 @@
+name: Workflow with Authorized Users
+
+on:
+  workflow_dispatch:
+    inputs:
+      # Optional: You can define inputs for the workflow if needed
+      some_input:
+        description: 'Example input'
+        required: true
+        default: 'example value'
+
+jobs:
+  check-authorized-users:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check if the user is authorized
+        run: |
+          # Retrieve the list of authorized users from GitHub secrets
+          AUTHORIZED_USERS="${{ secrets.AUTHORIZED_USERS }}"
+          
+          # Get the GitHub actor (username of the user who triggered the workflow)
+          USER="${GITHUB_ACTOR}"
+          
+          # Check if the user is in the list of authorized users
+          if [[ ! ",$AUTHORIZED_USERS," == *",${USER},"* ]]; then
+            echo "User $USER is not authorized to trigger this workflow."
+            exit 1  # Fail the workflow if the user is not authorized
+          else
+            echo "User $USER is authorized to trigger this workflow."
+          fi
+
+      - name: Run some task if user is authorized
+        if: success()  # This step only runs if the user is authorized
+        run: |
+          echo "Proceeding with the task..."
+          # Add the actual task/commands you want to run after authorization check
+
